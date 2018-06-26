@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="jspsych-6.0.3/jspsych.js"></script>
+    <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.0.3/plugins/jspsych-volume-setup-button-response.js"></script>
+    <script src="jspsych-6.0.3/plugins/jspsych-audio-slider-audio-response.js"></script>
+    <link rel="stylesheet" href="jspsych-6.0.3/css/jspsych.css"/>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<script>
+    var timeline = [];
+
+    var welcome = {
+        type: "html-keyboard-response",
+        stimulus: "Welcome to the experiment. Press any key to begin."
+    };
+    timeline.push(welcome);
+
+    var volume_setup = {
+      type: "volume-setup-button-response"
+    };
+    timeline.push(volume_setup);
+
+    /* define instructions trial */
+    var instructions = {
+        type: "html-keyboard-response",
+        stimulus: "<p>In this experiment, a variety of tones will play " +
+        "while being pointed to on the screen.</p><p>Once all tones have been played, an arrow will point to the chosen tone.</p>" +
+        "<p>You will then be asked to find the chosen tone on the slider.</p>" +
+        "<p>Then Click Continue once selected.</p>" +
+        "<p>Press any key to begin.</p>"
+    };
+    timeline.push(instructions);
+
+    var stimulus_config = {
+        waveType: "sine",
+        stimulus_freqs: [2600, 3900, 1300, 5200],
+        waitTime: 2,
+        prompt: 'Find the chosen note on the slider'
+    };
+
+    // let stimulus_config ={
+    //     waveType: 'sawtooth',
+    //     stimulus_freqs_length: 2,
+    //     waitTime: 2
+    // };
+
+    var trial_1 = {
+        type: 'audio-slider-audio-response',
+        stimulus: stimulus_config,
+        start: "5000",
+        min: "1000",
+        max: "10000",
+        step: "0.01",
+        prompt: 'Find the chosen note on the slider'
+
+    };
+    timeline.push(trial_1);
+
+    jsPsych.init({
+        timeline: timeline,
+        use_webaudio: true,
+        on_finish: function() {
+            jsPsych.data.displayData();
+        },
+        default_iti: 250
+    });
+
+</script>
+
+</body>
+</html>
