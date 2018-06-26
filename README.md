@@ -1,2 +1,2 @@
 # jsPsych-auditory-memory
-Project to complete an analysis on auditory memory on test subjects.
+Project to complete an analysis of auditory memory on test subjects.
