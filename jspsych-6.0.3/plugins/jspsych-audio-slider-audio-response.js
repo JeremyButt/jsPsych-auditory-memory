@@ -14,19 +14,19 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             min: {
                 type: jsPsych.plugins.parameterType.INT,
                 pretty_name: 'Min slider',
-                default: 0,
+                default: 300,
                 description: 'Sets the minimum value of the slider.'
             },
             max: {
                 type: jsPsych.plugins.parameterType.INT,
                 pretty_name: 'Max slider',
-                default: 100,
+                default: 3000,
                 description: 'Sets the maximum value of the slider',
             },
             start: {
                 type: jsPsych.plugins.parameterType.INT,
                 pretty_name: 'Slider starting value',
-                default: 50,
+                default: 1350,
                 description: 'Sets the starting value of the slider',
             },
             step: {
@@ -35,6 +35,12 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 default: 1,
                 description: 'Sets the step of the slider'
             },
+            reverse_slider: {
+                type: jsPsych.plugins.parameterType.BOOL,
+                pretty_name: 'Reverse selection slider',
+                default: false,
+                description: 'If true, will reverse selection slider'
+            },
             labels: {
                 type: jsPsych.plugins.parameterType.KEYCODE,
                 pretty_name:'Labels',
@@ -42,12 +48,12 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 array: true,
                 description: 'Labels of the slider.',
             },
-            begin_button_label: {
+            continue_prompt: {
                 type: jsPsych.plugins.parameterType.STRING,
-                pretty_name: 'Button label',
-                default: 'Begin Trial',
+                pretty_name: 'Continue Prompt',
+                default: 'Press any key to begin the trial',
                 array: false,
-                description: 'Label of the button to advance.'
+                description: 'Label of the key to press to advance.'
             },
             end_button_label: {
                 type: jsPsych.plugins.parameterType.STRING,
@@ -61,6 +67,19 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 pretty_name: 'Prompt',
                 default: null,
                 description: 'Any content here will be displayed below the slider.'
+            },
+            choices: {
+                type: jsPsych.plugins.parameterType.KEYCODE,
+                array: true,
+                pretty_name: 'Choices',
+                default: jsPsych.ALL_KEYS,
+                description: 'The keys the subject is allowed to press to respond to the stimulus.'
+            },
+            trial_duration: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'Trial duration',
+                default: null,
+                description: 'How for selection before it ends.'
             }
         }
     };
@@ -79,7 +98,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         // Define Trial functions
         let playStimulsOscillator = function (freq) {
             loadAndStartOscillator(freq);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
             oscillatorNode.stop(context.currentTime + 1);
         };
 
@@ -103,8 +122,8 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         };
 
         let stopResponseOscillator = function(){
-            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1);
-            oscillatorNode.stop(context.currentTime + 1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
+            oscillatorNode.stop(context.currentTime + 0.5);
         };
 
         let getRandomInt = function (min, max) {
@@ -139,7 +158,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             }
 
             for (let i = 0; i < numOfSamples; i++){
-                stimulus_freqs.push(getRandomInt(1000,10000))
+                stimulus_freqs.push(getRandomInt(300,3000))
             }
         }else{
             stimulus_freqs = trial.stimulus.stimulus_freqs;
@@ -160,7 +179,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
 
         /** Setup Page HTML**/
         // Stimulus HTML
-        let html = '<button style="display: inline-block;" id="jspsych-audio-slider-response-begin" class="jspsych-btn">' + trial.begin_button_label + '</button>';
+        let html = '<div id="jspsych-audio-slider-response-begin">' + trial.continue_prompt + '</div>';
 
         html += '<div style="display: none;" id="stimulusNodes" class="divTable">';
         html += '<div class="divTableBody">';
@@ -177,11 +196,15 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         html += '</div>';
         html += '</div>';
 
+        let range_style = '';
+        if (trial.reverse_slider == true){
+            range_style = ' direction: rtl;';
+        }
 
         // Response HTML
         html += '<div id="jspsych-audio-slider-response-wrapper" style=" display: none; margin: 100px 0px;">';
         html += '<div class="jspsych-audio-slider-response-container" id="jspsych-audio-slider-response-container" style=" position:relative;">';
-        html += '<input type="range" value="'+trial.start+'" min="'+trial.min+'" max="'+trial.max+'" step="'+trial.step+'" style="width: 100%;" id="jspsych-audio-slider-response-response"></input>';
+        html += '<input type="range" value="'+trial.start+'" min="'+trial.min+'" max="'+trial.max+'" step="'+trial.step+'" style="width: 100%;'+ range_style +'" id="jspsych-audio-slider-response-response"></input>';
         html += '<div>';
         for(let j=0; j < trial.labels.length; j++){
             let width = 100/(trial.labels.length-1);
@@ -209,8 +232,8 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             guessedFreq: 0
         };
 
-        // Run Trial
-        display_element.querySelector('#jspsych-audio-slider-response-begin').addEventListener('click', function() {
+        // Define Trial
+        let trial_procedure = function() {
             document.getElementById('jspsych-audio-slider-response-begin').style.display = 'none';
             document.getElementById('stimulusNodes').style.display = 'table';
             for (let i = 1; i <= stimulus_freqs.length; i++) {
@@ -226,15 +249,42 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             if (trial.prompt !== null){
                 setTimeout(function() { return function() { document.getElementById("jspsych-audio-slider-audio-response-prompt").style.display = 'inline-block';}; }(), (waitTime * stimulus_freqs.length)+waitTime);
             }
-            setTimeout(function() { return function() {playResponseOscillator(trial.start)}; }(), (waitTime * stimulus_freqs.length)+waitTime)
-        });
+        };
 
+        var keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
+            callback_function: trial_procedure,
+            valid_responses: trial.choices,
+            rt_method: 'date',
+            persist: false,
+            allow_held_key: false});
+
+        let started = false;
+
+        let selection_time_start;
+        let selection_time_end;
+        let selection_time;
         display_element.querySelector('#jspsych-audio-slider-response-response').addEventListener('input', function(){
+            if(!started){
+                playResponseOscillator(trial.start);
+                selection_time_start = context.currentTime;
+
+                // end trial if trial_duration is set
+                if (trial.trial_duration !== null) {
+                    jsPsych.pluginAPI.setTimeout(function() {
+                        selection_time = trial.trial_duration;
+                        end_trial();
+                    }, trial.trial_duration * 1000);
+                }
+
+                started = true;
+            }
             updateResponseOscillator(parseFloat(this.value));
             response.guessedFreq = parseFloat(this.value);
         });
 
         display_element.querySelector('#jspsych-audio-slider-response-next').addEventListener('click', function(){
+            selection_time_end = context.currentTime;
+            selection_time = selection_time_end - selection_time_start
             stopResponseOscillator();
             end_trial();
         });
@@ -250,7 +300,9 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             let trialdata = {
                 "correctFreq": response.correctFreq,
                 "stimulus": trial.stimulus,
-                "guessedFreq": response.guessedFreq
+                "guessedFreq": response.guessedFreq,
+                "freq_difference": Math.abs(response.correctFreq - response.guessedFreq),
+                "time_to_guess": selection_time
             };
 
             display_element.innerHTML = '';
@@ -258,7 +310,6 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             // next trial
             jsPsych.finishTrial(trialdata);
         };
-
 
     };
 

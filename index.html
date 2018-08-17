@@ -3,6 +3,7 @@
 <head>
     <script src="jspsych-6.0.3/jspsych.js"></script>
     <script src="jspsych-6.0.3/plugins/jspsych-html-keyboard-response.js"></script>
+    <script src="jspsych-6.0.3/plugins/jspsych-survey-text.js"></script>
     <script src="jspsych-6.0.3/plugins/jspsych-volume-setup-button-response.js"></script>
     <script src="jspsych-6.0.3/plugins/jspsych-audio-slider-audio-response.js"></script>
     <link rel="stylesheet" href="jspsych-6.0.3/css/jspsych.css"/>
@@ -18,8 +19,21 @@
     };
     timeline.push(welcome);
 
+    var enter_subject_num = {
+        type: "survey-text",
+        questions: [
+            {
+                prompt: 'What is your subject number?',
+                value: '1234'
+            }
+        ]
+    };
+    timeline.push(enter_subject_num);
+
     var volume_setup = {
-      type: "volume-setup-button-response"
+        type: "volume-setup-button-response",
+        stimulus: 5000,
+        prompt: 'Press any key to continue'
     };
     timeline.push(volume_setup);
 
@@ -29,14 +43,14 @@
         stimulus: "<p>In this experiment, a variety of tones will play " +
         "while being pointed to on the screen.</p><p>Once all tones have been played, an arrow will point to the chosen tone.</p>" +
         "<p>You will then be asked to find the chosen tone on the slider.</p>" +
-        "<p>Then Click Continue once selected.</p>" +
+        "<p>Then click continue once selected.</p>" +
         "<p>Press any key to begin.</p>"
     };
     timeline.push(instructions);
 
     var stimulus_config = {
         waveType: "sine",
-        stimulus_freqs: [2600, 3900, 1300, 5200],
+        stimulus_freqs: [600, 2900, 1300, 2200],
         waitTime: 2,
         prompt: 'Find the chosen note on the slider'
     };
@@ -50,11 +64,14 @@
     var trial_1 = {
         type: 'audio-slider-audio-response',
         stimulus: stimulus_config,
-        start: "5000",
-        min: "1000",
-        max: "10000",
-        step: "0.01",
-        prompt: 'Find the chosen note on the slider'
+        start: "1500",
+        min: "250",
+        max: "3500",
+        step: "0.001",
+        reverse_slider: true,
+        prompt: 'Find the chosen note on the slider',
+        continue_prompt: 'Press any key to begin the trial',
+        trial_duration: 5
 
     };
     timeline.push(trial_1);

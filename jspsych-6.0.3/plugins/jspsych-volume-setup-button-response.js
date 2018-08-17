@@ -6,17 +6,23 @@ jsPsych.plugins['volume-setup-button-response'] = (function() {
         description: '',
         parameters: {
             stimulus: {
-                type: jsPsych.plugins.parameterType.OBJECT,
+                type: jsPsych.plugins.parameterType.INT,
                 pretty_name: 'Stimulus',
                 default: 5000,
                 description: 'The test tone frequency'
             },
-            begin_button_label: {
+            choices: {
+                type: jsPsych.plugins.parameterType.KEYCODE,
+                array: true,
+                pretty_name: 'Choices',
+                default: jsPsych.ALL_KEYS,
+                description: 'The keys the subject is allowed to press to respond to the stimulus.'
+            },
+            prompt: {
                 type: jsPsych.plugins.parameterType.STRING,
-                pretty_name: 'Button label',
-                default: 'Begin Trial',
-                array: false,
-                description: 'Label of the button to advance.'
+                pretty_name: 'Prompt',
+                default: null,
+                description: 'Any content here will be displayed below the stimulus.'
             }
         }
     };
@@ -40,8 +46,8 @@ jsPsych.plugins['volume-setup-button-response'] = (function() {
         };
 
         let stopOscillator = function(){
-            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 1);
-            oscillatorNode.stop(context.currentTime + 1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
+            oscillatorNode.stop(context.currentTime + 0.5);
         };
 
         // Initiate Web Audio
@@ -61,25 +67,28 @@ jsPsych.plugins['volume-setup-button-response'] = (function() {
         // Stimulus HTML
         let html = '<div>Adjust your computer\'s volume to an appropriate value.</div>';
 
-        html += '<button style="display: inline-block;" id="jspsych-audio-slider-response-begin" class="jspsych-btn">' + trial.begin_button_label + '</button>';
+        html += '<div>' + trial.prompt + '</div>';
 
         display_element.innerHTML = html;
 
         playOscillator(trial.stimulus);
 
-        display_element.querySelector('#jspsych-audio-slider-response-begin').addEventListener('click', function(){
-            stopOscillator();
-            end_trial();
-        });
-
         let end_trial = function(){
-
+            stopOscillator();
             display_element.innerHTML = '';
 
             // next trial
             jsPsych.finishTrial();
         };
 
+        // start the response listener
+        let keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
+            callback_function: end_trial,
+            valid_responses: trial.choices,
+            rt_method: 'date',
+            persist: false,
+            allow_held_key: false
+        });
 
     };
 
