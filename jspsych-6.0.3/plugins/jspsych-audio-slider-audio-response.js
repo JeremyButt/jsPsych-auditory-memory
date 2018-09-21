@@ -93,6 +93,12 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
          * stimulus_freqs: List of stimulus frequencies to run trial on --> Defaults to random generated list {NOT REQUIRED}
          * stimulus_freqs_length: length for randomly generated list of stimulus frequencies --> defaults to randomly generated number {NOT REQUIRED}
          * waitTime: time to wait in between stimulus tones --> Defaults to 2 seconds {NOT REQUIRED}
+         *
+         * if specifying randomly generated ranges:
+         *      stimulus_freqs_rand_quant_start: start of range of randomly generated quantity of samples to be generated.
+         *      stimulus_freqs_rand_quant_end: end of range of randomly generated quantity of samples to be generated.
+         *      stimulus_freqs_rand_freq_start: start of range of randomly generated frequencies of the samples.
+         *      stimulus_freqs_rand_freq_end: start of range of randomly generated frequencies of the samples.
          * **/
 
         // Define Trial functions
@@ -152,13 +158,30 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         if (!trial.stimulus.hasOwnProperty('stimulus_freqs')) {
             let numOfSamples = 0;
             if (!trial.stimulus.hasOwnProperty('stimulus_freqs_length')){
-                numOfSamples = getRandomInt(3,6);
+                let rand_quant_start = 3;
+                let rand_quant_end = 6;
+                if (trial.stimulus.hasOwnProperty('stimulus_freqs_rand_quant_start')){
+                    rand_quant_start = trial.stimulus.stimulus_freqs_rand_quant_start
+                }
+                if (trial.stimulus.hasOwnProperty('stimulus_freqs_rand_quant_end')){
+                    rand_quant_end = trial.stimulus.stimulus_freqs_rand_quant_end
+                }
+                numOfSamples = getRandomInt(rand_quant_start, rand_quant_end);
             }else{
                 numOfSamples = trial.stimulus.stimulus_freqs_length;
             }
 
+            let rand_freq_start = 300;
+            let rand_freq_end = 3000;
+            if (trial.stimulus.hasOwnProperty('stimulus_freqs_rand_freq_start')){
+                rand_freq_start = trial.stimulus.stimulus_freqs_rand_freq_start
+            }
+            if (trial.stimulus.hasOwnProperty('stimulus_freqs_rand_freq_end')){
+                rand_freq_end = trial.stimulus.stimulus_freqs_rand_freq_end
+            }
+
             for (let i = 0; i < numOfSamples; i++){
-                stimulus_freqs.push(getRandomInt(300,3000))
+                stimulus_freqs.push(getRandomInt(rand_freq_start, rand_freq_end))
             }
         }else{
             stimulus_freqs = trial.stimulus.stimulus_freqs;
