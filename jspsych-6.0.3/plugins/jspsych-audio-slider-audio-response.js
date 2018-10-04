@@ -48,12 +48,19 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 array: true,
                 description: 'Labels of the slider.',
             },
-            continue_prompt: {
+            fixation: {
                 type: jsPsych.plugins.parameterType.STRING,
-                pretty_name: 'Continue Prompt',
-                default: 'Press any key to begin the trial',
+                pretty_name: 'Fixation',
+                default: '<div style="font-size:60px;">+</div>',
                 array: false,
-                description: 'Label of the key to press to advance.'
+                description: 'Fixation before the trial starts'
+            },
+            fixation_time: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'Fixation Time',
+                default: 5,
+                array: false,
+                description: 'Timeout for fixation before the trial starts'
             },
             end_button_label: {
                 type: jsPsych.plugins.parameterType.STRING,
@@ -104,7 +111,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         // Define Trial functions
         let playStimulsOscillator = function (freq) {
             loadAndStartOscillator(freq);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.25);
             oscillatorNode.stop(context.currentTime + 1);
         };
 
@@ -128,8 +135,8 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         };
 
         let stopResponseOscillator = function(){
-            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.5);
-            oscillatorNode.stop(context.currentTime + 0.5);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.25);
+            oscillatorNode.stop(context.currentTime + 0.25);
         };
 
         let getRandomInt = function (min, max) {
@@ -202,7 +209,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
 
         /** Setup Page HTML**/
         // Stimulus HTML
-        let html = '<div id="jspsych-audio-slider-response-begin">' + trial.continue_prompt + '</div>';
+        let html = '<div id="jspsych-audio-slider-response-begin">' + trial.fixation + '</div>';
 
         html += '<div style="display: none;" id="stimulusNodes" class="divTable">';
         html += '<div class="divTableBody">';
@@ -274,12 +281,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             }
         };
 
-        var keyboardListener = jsPsych.pluginAPI.getKeyboardResponse({
-            callback_function: trial_procedure,
-            valid_responses: trial.choices,
-            rt_method: 'date',
-            persist: false,
-            allow_held_key: false});
+        setTimeout(trial_procedure, (trial.fixation_time * 1000));
 
         let started = false;
 
@@ -316,7 +318,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             jsPsych.pluginAPI.clearAllTimeouts();
 
             if(context !== null){
-                context.close();
+                context.suspend();
             }
 
             // save data
