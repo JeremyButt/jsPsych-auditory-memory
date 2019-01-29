@@ -32,7 +32,7 @@
 
     var volume_setup = {
         type: "volume-setup-button-response",
-        stimulus: 5000,
+        stimulus: 440,
         prompt: 'Press any key to continue'
     };
     timeline.push(volume_setup);
@@ -65,46 +65,59 @@
     //     waitTime: 2
     // };
 
+    var test_stimuli = [
+        {stimulus: "audio-slider-audio-response",
+            start: "1500",
+            min: "250",
+            max: "3500",
+            step: "0.001",
+            reverse_slider: true,
+            prompt: 'Find the chosen note on the slider',
+            fixation: '<div style="font-size:60px;">+</div>',
+            fixation_time: 1,
+            trial_duration: 5}
+    ];
     var trial_1 = {
         type: 'audio-slider-audio-response',
-        stimulus: stimulus_config,
-        start: "1500",
-        min: "250",
-        max: "3500",
-        step: "0.001",
-        reverse_slider: true,
-        prompt: 'Find the chosen note on the slider',
-        fixation: '<div style="font-size:60px;">(\'__\')</div>',
-        fixation_time: 5,
-        trial_duration: 5
+        stimulus: jsPsych.timelineVariable('stimulus'),
+
+
 
     };
 
-    var trial_2 = {
-        type: 'audio-slider-audio-response',
-        stimulus: stimulus_config,
-        start: "1500",
-        min: "250",
-        max: "3500",
-        step: "0.001",
-        reverse_slider: true,
-        prompt: 'Find the chosen note on the slider',
-        fixation: '<div style="font-size:60px;">(\'~~\')</div>',
-        fixation_time: 5,
-        trial_duration: 5
+
+
+    var test_procedure = {
+        timeline: [trial_1],
+        timeline_variables: test_stimuli,
+        repetitions: 2,
+        randomize_order: true
 
     };
 
-    timeline.push(trial_1);
-    timeline.push(trial_2);
+    timeline.push(test_procedure);
+
+    function saveData(name, data) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'write_data.php'); // 'write_data.php' is the path to the php file described above.
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({filename: name, filedata: data}));
+        window.location.href = 'http://auditory.neurofog.ca/AuditoryMemory/jspsych-6.0.3/debrief/AWM%20Feedback%20Form%20v2.0.html';
+
+
+
+
+
+    }
 
     jsPsych.init({
         timeline: timeline,
         use_webaudio: true,
-        on_finish: function() {
-            jsPsych.data.displayData();
-        },
-        default_iti: 250
+        on_finish: function()
+        {
+            let subject_num = jsPsych.data.get().values()[1]['responses'].split('"')[3];
+            saveData("experiment_data_subjectnumber_" + subject_num, jsPsych.data.get().csv());
+        }
     });
 
 </script>

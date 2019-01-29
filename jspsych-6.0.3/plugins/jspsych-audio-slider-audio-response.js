@@ -122,7 +122,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             oscillatorNode.frequency.value = freq;
             oscillatorNode.connect(gainNode);
             gainNode.connect(context.destination);
-            gainNode.gain.setValueAtTime(0.5, context.currentTime);
+            gainNode.gain.setValueAtTime(0.50, context.currentTime);
             oscillatorNode.start();
         };
 
@@ -131,7 +131,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         };
 
         let updateResponseOscillator = function (freq){
-          oscillatorNode.frequency.exponentialRampToValueAtTime(freq, context.currentTime + 0.1);
+          oscillatorNode.frequency.exponentialRampToValueAtTime(freq, context.currentTime + 0.25);
         };
 
         let stopResponseOscillator = function(){
@@ -162,18 +162,11 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
 
         //Stimulus Frequency Samples
         let stimulus_freqs = [];
+        let numOfSamples = 0;
         if (!trial.stimulus.hasOwnProperty('stimulus_freqs')) {
-            let numOfSamples = 0;
             if (!trial.stimulus.hasOwnProperty('stimulus_freqs_length')){
-                let rand_quant_start = 3;
-                let rand_quant_end = 6;
-                if (trial.stimulus.hasOwnProperty('stimulus_freqs_rand_quant_start')){
-                    rand_quant_start = trial.stimulus.stimulus_freqs_rand_quant_start
-                }
-                if (trial.stimulus.hasOwnProperty('stimulus_freqs_rand_quant_end')){
-                    rand_quant_end = trial.stimulus.stimulus_freqs_rand_quant_end
-                }
-                numOfSamples = getRandomInt(rand_quant_start, rand_quant_end);
+                let set_lengths = [1,3,5];
+                numOfSamples = set_lengths[getRandomInt(0,2)];
             }else{
                 numOfSamples = trial.stimulus.stimulus_freqs_length;
             }
@@ -191,7 +184,8 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 stimulus_freqs.push(getRandomInt(rand_freq_start, rand_freq_end))
             }
         }else{
-            stimulus_freqs = trial.stimulus.stimulus_freqs;
+            var rand = myArray[Math.floor(Math.random() * myArray.length)];
+            stimulus_freqs = rand;
         }
 
         //Wait Times for Stimulus
@@ -281,7 +275,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             }
         };
 
-        setTimeout(trial_procedure, (trial.fixation_time * 1000));
+        setTimeout(trial_procedure, (trial.fixation_time * 400));
 
         let started = false;
 
@@ -327,7 +321,10 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 "stimulus": trial.stimulus,
                 "guessedFreq": response.guessedFreq,
                 "freq_difference": Math.abs(response.correctFreq - response.guessedFreq),
-                "time_to_guess": selection_time
+                "time_to_guess": selection_time,
+                "num_samples": numOfSamples,
+                //"probe_position"://random pick doesn't work ,
+
             };
 
             display_element.innerHTML = '';
