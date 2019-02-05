@@ -184,8 +184,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 stimulus_freqs.push(getRandomInt(rand_freq_start, rand_freq_end))
             }
         }else{
-            var rand = myArray[Math.floor(Math.random() * myArray.length)];
-            stimulus_freqs = rand;
+            stimulus_freqs = trial.stimulus.stimulus_freqs;
         }
 
         //Wait Times for Stimulus
@@ -251,10 +250,12 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         display_element.innerHTML = html;
 
 
+        //define variables outside trial scope
         let response = {
             correctFreq: 0,
             guessedFreq: 0
         };
+        let randomPick = null;
 
         // Define Trial
         let trial_procedure = function() {
@@ -265,7 +266,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 setTimeout(function(x) { return function() { playStimulsOscillator(stimulus_freqs[x]) }; }(i-1), waitTime*i);
                 setTimeout(function() { return function() { document.getElementById("soundIndicatorArrow"+(i-1).toString()).style.display = 'none';}; }(), (waitTime*i)+waitTime);
             }
-            let randomPick = getRandomInt(0,(stimulus_freqs.length - 1));
+            randomPick = getRandomInt(0,(stimulus_freqs.length - 1));
             response.correctFreq = stimulus_freqs[randomPick];
             setTimeout(function() { return function() { document.getElementById("soundIndicatorArrow"+(randomPick).toString()).style.display = 'inline-block';}; }(), (waitTime * stimulus_freqs.length)+waitTime);
             setTimeout(function() { return function() { document.getElementById("jspsych-audio-slider-response-wrapper").style.display = 'inline-block';}; }(), (waitTime * stimulus_freqs.length)+waitTime);
@@ -323,8 +324,8 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 "freq_difference": Math.abs(response.correctFreq - response.guessedFreq),
                 "time_to_guess": selection_time,
                 "num_samples": numOfSamples,
-                //"probe_position"://random pick doesn't work ,
-
+                "stimulus_freqs": stimulus_freqs,
+                "probe_position": randomPick
             };
 
             display_element.innerHTML = '';
