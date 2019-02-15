@@ -283,7 +283,17 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         let selection_time_start;
         let selection_time_end;
         let selection_time;
+        let idleTime = 0;
+        let idleInterval = setInterval(timerIncrement, 1000); // @TODO make the timeout check confi
+        function timerIncrement() {
+            idleTime = idleTime + 1;
+            if (idleTime > 2) {
+                stopResponseOscillator();
+                started = false; // @TODO handle the stop via timeout vs not started yet
+            }
+        }
         display_element.querySelector('#jspsych-audio-slider-response-response').addEventListener('input', function(){
+            console.log("#jspsych-audio-slider-response-response input activated!");
             if(!started){
                 playResponseOscillator(trial.start);
                 selection_time_start = context.currentTime;
@@ -300,6 +310,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
             }
             updateResponseOscillator(parseFloat(this.value));
             response.guessedFreq = parseFloat(this.value);
+            idleTime = 0;
         });
 
         display_element.querySelector('#jspsych-audio-slider-response-next').addEventListener('click', function(){
