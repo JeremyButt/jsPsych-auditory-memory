@@ -41,6 +41,12 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 default: false,
                 description: 'If true, will reverse selection slider'
             },
+            slider_width_px: {
+                type: jsPsych.plugins.parameterType.INT,
+                pretty_name: 'Slider width',
+                default: 0,
+                description: 'Sets the width of the slider'
+            },
             labels: {
                 type: jsPsych.plugins.parameterType.KEYCODE,
                 pretty_name:'Labels',
@@ -225,7 +231,11 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         }
 
         // Response HTML
-        html += '<div id="jspsych-audio-slider-response-wrapper" style=" display: inline-block; width:800px; margin: 100px 0px;">'; // add configurability here for width: @TODO
+        let slider_width_style = '';
+        if (trial.slider_width_px != 0){
+            slider_width_style += ' width:' + trial.slider_width_px.toString() + 'px; ';
+        }
+        html += '<div id="jspsych-audio-slider-response-wrapper" style=" display: inline-block;' + slider_width_style + 'margin: 100px 0px;">';
         html += '<div class="jspsych-audio-slider-response-container" id="jspsych-audio-slider-response-container" style="display:none; position:relative; width:100%;">';
         html += '<input type="range" value="'+trial.start+'" min="'+trial.min+'" max="'+trial.max+'" step="'+trial.step+'" style="width: 100%;'+ range_style +'" id="jspsych-audio-slider-response-response"></input>';
         html += '<div>';
