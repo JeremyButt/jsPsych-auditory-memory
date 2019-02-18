@@ -151,7 +151,6 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         };
 
         // Initiate Web Audio
-        jsPsych.pluginAPI.initAudio();
 
         let context = jsPsych.pluginAPI.audioContext();
         if(context === null){
