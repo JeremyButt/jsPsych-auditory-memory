@@ -65,27 +65,23 @@
     //     waitTime: 2
     // };
 
-    var test_stimuli = [
-        {stimulus: "audio-slider-audio-response",
-            start: "1500",
-            min: "250",
-            max: "3500",
-            step: "0.001",
+    var test_stimuli =
+        {
+            type: 'audio-slider-audio-response',
+            start: 1500,
+            min: 250,
+            max: 3500,
+            step: 0.001,
             reverse_slider: true,
+            slider_width_px: 800,
             prompt: 'Find the chosen note on the slider',
             fixation: '<div style="font-size:60px;">+</div>',
             fixation_time: 1,
-            trial_duration: 5}
-    ];
-
-    var trial_1 = {
-        type: 'audio-slider-audio-response',
-        stimulus: jsPsych.timelineVariable('stimulus'),
-    };
+            trial_duration: 5
+        };
 
     var test_procedure = {
-        timeline: [trial_1],
-        timeline_variables: test_stimuli,
+        timeline: [test_stimuli],
         repetitions: 2,
         randomize_order: true
     };
