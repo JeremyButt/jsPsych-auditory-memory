@@ -133,6 +133,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         };
 
         let playResponseOscillator = function (freq){
+            stopResponseOscillator();
             loadAndStartOscillator(freq);
         };
 
@@ -289,22 +290,24 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         setTimeout(trial_procedure, (trial.fixation_time * 400));
 
         let started = false;
+        let timeout_stopped = false;
 
         let selection_time_start;
         let selection_time_end;
         let selection_time;
         let idleTime = 0;
-        let idleInterval = setInterval(timerIncrement, 1000); // @TODO make the timeout check confi
-        function timerIncrement() {
+        let timerIncrement = function() {
             idleTime = idleTime + 1;
-            if (idleTime > 2) {
+            if (idleTime > 1) {
                 stopResponseOscillator();
-                started = false; // @TODO handle the stop via timeout vs not started yet
+                timeout_stopped = true;
             }
-        }
-        display_element.querySelector('#jspsych-audio-slider-response-response').addEventListener('input', function(){
+        };
+        let idleInterval = setInterval(timerIncrement, 500);
+        let response_event = function(){
             console.log("#jspsych-audio-slider-response-response input activated!");
             if(!started){
+                console.log("not started");
                 playResponseOscillator(trial.start);
                 selection_time_start = context.currentTime;
 
@@ -317,11 +320,17 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 }
 
                 started = true;
+            } else if (timeout_stopped){
+                console.log("timeout_stopped");
+                playResponseOscillator(parseFloat(this.value));
+                timeout_stopped = false;
+            }else{
+                updateResponseOscillator(parseFloat(this.value));
+                response.guessedFreq = parseFloat(this.value);
+                idleTime = 0;
             }
-            updateResponseOscillator(parseFloat(this.value));
-            response.guessedFreq = parseFloat(this.value);
-            idleTime = 0;
-        });
+        };
+        display_element.querySelector('#jspsych-audio-slider-response-response').addEventListener('input', response_event);
 
         display_element.querySelector('#jspsych-audio-slider-response-next').addEventListener('click', function(){
             selection_time_end = context.currentTime;
