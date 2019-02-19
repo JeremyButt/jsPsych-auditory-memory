@@ -186,8 +186,21 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 rand_freq_end = trial.stimulus.stimulus_freqs_rand_freq_end
             }
 
-            for (let i = 0; i < numOfSamples; i++){
-                stimulus_freqs.push(getRandomInt(rand_freq_start, rand_freq_end))
+            stimulus_freqs.push(getRandomInt(rand_freq_start, rand_freq_end))
+            for (let i = 0; i < numOfSamples - 1; i++){
+                let freq_to_add = getRandomInt(rand_freq_start, rand_freq_end);
+                let valid_distance = true;
+                for(let j = 0; j < stimulus_freqs.length; j++){
+                    let distance = 12 * Math.abs(Math.log2(freq_to_add/stimulus_freqs[j]));
+                    if (distance < 2){
+                        valid_distance = false;
+                    }
+                }
+                if (valid_distance) {
+                    stimulus_freqs.push(freq_to_add)
+                }else{
+                    i--;
+                }
             }
         }else{
             stimulus_freqs = trial.stimulus.stimulus_freqs;
