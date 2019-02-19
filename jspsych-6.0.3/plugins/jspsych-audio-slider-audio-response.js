@@ -367,9 +367,13 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 "freq_difference": Math.abs(response.correctFreq - response.guessedFreq),
                 "time_to_guess": selection_time,
                 "num_samples": numOfSamples,
-                "stimulus_freqs": stimulus_freqs,
                 "probe_position": randomPick
             };
+
+            for (let i = 0; i < stimulus_freqs.length; i++){
+                let freq_name = 'stimulus_freq_' + i.toString();
+                trialdata[freq_name] = stimulus_freqs[i];
+            }
 
             display_element.innerHTML = '';
 
