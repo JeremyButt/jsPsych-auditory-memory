@@ -310,12 +310,12 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         let idleTime = 0;
         let timerIncrement = function() {
             idleTime = idleTime + 1;
-            if (idleTime > 1) {
+            if (idleTime > 3) {
                 stopResponseOscillator();
                 timeout_stopped = true;
             }
         };
-        let idleInterval = setInterval(timerIncrement, 500);
+        let idleInterval = setInterval(timerIncrement, waitTime/4);
         let response_event = function(){
             console.log("#jspsych-audio-slider-response-response input activated!");
             if(!started){
@@ -327,6 +327,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 if (trial.trial_duration !== null) {
                     jsPsych.pluginAPI.setTimeout(function() {
                         selection_time = trial.trial_duration;
+                        stopResponseOscillator();
                         end_trial();
                     }, trial.trial_duration * 1000);
                 }
