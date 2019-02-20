@@ -151,7 +151,6 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         };
 
         // Initiate Web Audio
-        jsPsych.pluginAPI.initAudio();
 
         let context = jsPsych.pluginAPI.audioContext();
         if(context === null){
@@ -187,8 +186,21 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 rand_freq_end = trial.stimulus.stimulus_freqs_rand_freq_end
             }
 
-            for (let i = 0; i < numOfSamples; i++){
-                stimulus_freqs.push(getRandomInt(rand_freq_start, rand_freq_end))
+            stimulus_freqs.push(getRandomInt(rand_freq_start, rand_freq_end))
+            for (let i = 0; i < numOfSamples - 1; i++){
+                let freq_to_add = getRandomInt(rand_freq_start, rand_freq_end);
+                let valid_distance = true;
+                for(let j = 0; j < stimulus_freqs.length; j++){
+                    let distance = 12 * Math.abs(Math.log2(freq_to_add/stimulus_freqs[j]));
+                    if (distance < 2){
+                        valid_distance = false;
+                    }
+                }
+                if (valid_distance) {
+                    stimulus_freqs.push(freq_to_add)
+                }else{
+                    i--;
+                }
             }
         }else{
             stimulus_freqs = trial.stimulus.stimulus_freqs;
@@ -298,12 +310,12 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
         let idleTime = 0;
         let timerIncrement = function() {
             idleTime = idleTime + 1;
-            if (idleTime > 1) {
+            if (idleTime > 3) {
                 stopResponseOscillator();
                 timeout_stopped = true;
             }
         };
-        let idleInterval = setInterval(timerIncrement, 500);
+        let idleInterval = setInterval(timerIncrement, waitTime/4);
         let response_event = function(){
             console.log("#jspsych-audio-slider-response-response input activated!");
             if(!started){
@@ -315,6 +327,7 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 if (trial.trial_duration !== null) {
                     jsPsych.pluginAPI.setTimeout(function() {
                         selection_time = trial.trial_duration;
+                        stopResponseOscillator();
                         end_trial();
                     }, trial.trial_duration * 1000);
                 }
@@ -354,9 +367,13 @@ jsPsych.plugins['audio-slider-audio-response'] = (function() {
                 "freq_difference": Math.abs(response.correctFreq - response.guessedFreq),
                 "time_to_guess": selection_time,
                 "num_samples": numOfSamples,
-                "stimulus_freqs": stimulus_freqs,
                 "probe_position": randomPick
             };
+
+            for (let i = 0; i < stimulus_freqs.length; i++){
+                let freq_name = 'stimulus_freq_' + i.toString();
+                trialdata[freq_name] = stimulus_freqs[i];
+            }
 
             display_element.innerHTML = '';
 
